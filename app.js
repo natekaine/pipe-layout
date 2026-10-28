@@ -15,11 +15,12 @@ function fillSizes(id, dflt) {
 }
 fillSizes('s-size', '2'); fillSizes('r-size', '2'); fillSizes('d-size', '2'); fillSizes('p-size', '2');
 fillSizes('m-size', '6'); fillSizes('sd-branch', '2'); fillSizes('sd-header', '6');
+fillSizes('c-size', '2'); fillSizes('rd-large', '6');
 
 // navigation — home entry screen with one tool open at a time. Opening a
 // tool also recomputes it, so its results and diagrams are always fresh the
 // moment the panel becomes visible.
-const TOOL_TITLES = { simple: 'Simple Offset', rolling: 'Rolling Offset', parallel: 'Parallel', miter: 'Miter', saddle: 'Saddle', data: 'Pipe Data', reference: 'Reference' };
+const TOOL_TITLES = { simple: 'Simple Offset', rolling: 'Rolling Offset', parallel: 'Parallel', miter: 'Miter', saddle: 'Saddle', centers: 'Fitting Centers', reducers: 'Reducers', data: 'Pipe Data', reference: 'Reference' };
 let lastTool = null; // most recent tool, kept for this page session only
 function calcFor(t) {
   if (t === 'simple') calcSimple();
@@ -27,6 +28,8 @@ function calcFor(t) {
   else if (t === 'parallel') calcParallel();
   else if (t === 'miter') calcMiter();
   else if (t === 'saddle') calcSaddle();
+  else if (t === 'centers') calcCenters();
+  else if (t === 'reducers') calcReducers();
   else if (t === 'data') calcData();
   else if (t === 'reference') calcReference();
 }
@@ -343,6 +346,162 @@ function calcSaddle() {
   lastSaddleSummary = 'Saddle ' + angle + '° · branch ' + branch + '" on ' + header + '" header · deepest ordinate ' + M.formatFraction(s.depth) + ' · wrap ' + M.formatFraction(s.circumference);
 }
 
+// ---------- fitting centers ----------
+let lastCentersSummary = '';
+const CENTER_NOTES = {
+  elbow90: 'The center of a 90 is the point where the two end centerlines cross — it floats in the corner, not on the fitting. To find it: measure the center-to-end (A) back from either face along that leg\'s centerline; both faces land on the same point. On an installed elbow, lay a straightedge across each face and project the centerlines until they meet.',
+  elbow90sr: 'Same idea as the long-radius 90, with the short-radius center-to-end (A = the pipe size itself, per B16.9). The center is where the two end centerlines cross.',
+  elbow45: 'A 45\'s center is where its two end centerlines cross, out past the heel. Measure the center-to-end (B) back from either face along its centerline — both faces give the same crossing point.',
+  tee: 'A tee has one center: where the branch centerline crosses the run centerline. C is measured from a run face to the center, M from the branch face to the center — on an equal tee, B16.9 makes them the same number at every size.',
+};
+function drawCentersSVG(kind, valTxt) {
+  const svg = $('c-svg');
+  let str = '';
+  if (kind === 'tee') {
+    // run pipe horizontal, branch up at center x=170; center at (170,150)
+    str += '<path d="M50 130 H290 V170 H50 Z M148 40 H192 V130 H148 Z" class="svg-pipe" stroke-width="2"/>';
+    str += '<line x1="30" y1="150" x2="310" y2="150" class="svg-center"/>';
+    str += '<line x1="170" y1="22" x2="170" y2="150" class="svg-center"/>';
+    str += '<circle cx="170" cy="150" r="4.5" class="svg-dot"/>';
+    str += '<line x1="50" y1="196" x2="170" y2="196" class="svg-end"/>';
+    str += '<line x1="50" y1="188" x2="50" y2="202" class="svg-end"/><line x1="170" y1="188" x2="170" y2="202" class="svg-end"/>';
+    str += '<text x="86" y="214" class="svg-label">C = ' + valTxt + '</text>';
+    str += '<line x1="216" y1="40" x2="216" y2="150" class="svg-end"/>';
+    str += '<line x1="209" y1="40" x2="223" y2="40" class="svg-end"/><line x1="209" y1="150" x2="223" y2="150" class="svg-end"/>';
+    str += '<text x="228" y="99" class="svg-label">M = ' + valTxt + '</text>';
+    str += '<text x="182" y="140" class="svg-label">CENTER</text>';
+    str += '<text x="30" y="18" class="svg-label dim">dashed lines are the centerlines — where they cross is the center</text>';
+  } else if (kind === 'elbow45') {
+    str += '<path d="M45 178 H185 L252 111" class="svg-pipe" stroke-width="40"/>';
+    str += '<line x1="28" y1="178" x2="196" y2="178" class="svg-center"/>';
+    str += '<line x1="196" y1="178" x2="268" y2="106" class="svg-center"/>';
+    str += '<line x1="196" y1="178" x2="150" y2="224" class="svg-center"/>';
+    str += '<circle cx="196" cy="178" r="4.5" class="svg-dot"/>';
+    str += '<text x="60" y="206" class="svg-label">B = ' + valTxt + ' from this face</text>';
+    str += '<text x="196" y="92" class="svg-label">B = ' + valTxt + '</text>';
+    str += '<text x="206" y="196" class="svg-label">CENTER</text>';
+    str += '<text x="28" y="18" class="svg-label dim">extend both centerlines — the crossing point is the center</text>';
+  } else {
+    // 90 elbow: horizontal leg into a quarter bend up; center at (215,150)
+    str += '<path d="M60 172 H193 A44 44 0 0 0 237 128 V35 H193 V128 A0 0 0 0 0 193 128 H60 Z" class="svg-pipe" stroke-width="2"/>';
+    str += '<line x1="42" y1="150" x2="215" y2="150" class="svg-center"/>';
+    str += '<line x1="215" y1="150" x2="215" y2="18" class="svg-center"/>';
+    str += '<circle cx="215" cy="150" r="4.5" class="svg-dot"/>';
+    str += '<line x1="60" y1="198" x2="215" y2="198" class="svg-end"/>';
+    str += '<line x1="60" y1="190" x2="60" y2="205" class="svg-end"/><line x1="215" y1="190" x2="215" y2="205" class="svg-end"/>';
+    str += '<text x="104" y="216" class="svg-label">A = ' + valTxt + '</text>';
+    str += '<line x1="262" y1="35" x2="262" y2="150" class="svg-end"/>';
+    str += '<line x1="255" y1="35" x2="269" y2="35" class="svg-end"/><line x1="255" y1="150" x2="269" y2="150" class="svg-end"/>';
+    str += '<text x="272" y="96" class="svg-label">A</text>';
+    str += '<text x="150" y="138" class="svg-label">CENTER →</text>';
+    str += '<text x="42" y="18" class="svg-label dim">measure A back from either face — both give the same point</text>';
+  }
+  svg.innerHTML = str;
+}
+function calcCenters() {
+  const kind = $('c-type').value;
+  const size = $('c-size').value;
+  const p = T.byNps(size);
+  const warn = $('c-warn');
+  warn.hidden = true;
+  $('c-note').textContent = CENTER_NOTES[kind];
+  const row = (k, v) => '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>';
+  if (kind === 'tee') {
+    const tc = M.teeCenter(size);
+    $('c-hero-label').textContent = 'CENTER-TO-END — RUN (C) AND BRANCH (M)';
+    $('c-main').textContent = M.formatFraction(tc.run);
+    $('c-outs').innerHTML =
+      row('Run center-to-end (C)', fmt(tc.run)) +
+      row('Branch center-to-end (M)', fmt(tc.branch)) +
+      row('Pipe OD', p.od.toFixed(3) + '"') +
+      row('Source', 'ASME B16.9 equal tee');
+    drawCentersSVG('tee', M.formatFraction(tc.run));
+    lastCentersSummary = 'Tee center ' + size + '" · C = M = ' + M.formatFraction(tc.run);
+    return;
+  }
+  const isSR = kind === 'elbow90sr';
+  const angle = kind === 'elbow45' ? 45 : 90;
+  const to = M.takeout(size, angle, isSR ? 'SR' : 'LR');
+  if (!to) {
+    warn.hidden = false;
+    warn.textContent = 'ASME B16.9 doesn\'t publish a short-radius 90 below NPS 1 — pick long radius or a larger size.';
+    $('c-main').textContent = '—'; $('c-outs').innerHTML = ''; $('c-svg').innerHTML = '';
+    lastCentersSummary = '';
+    return;
+  }
+  $('c-hero-label').textContent = angle === 90 ? 'CENTER-TO-END — EACH FACE (A)' : 'CENTER-TO-END — EACH FACE (B)';
+  $('c-main').textContent = M.formatFraction(to.value);
+  $('c-outs').innerHTML =
+    row('Center-to-end, face 1', fmt(to.value)) +
+    row('Center-to-end, face 2', fmt(to.value)) +
+    row('Pipe OD', p.od.toFixed(3) + '"') +
+    row('Source', to.source + (to.exact ? ' (exact)' : ' (approx)'));
+  drawCentersSVG(kind, M.formatFraction(to.value));
+  lastCentersSummary = 'Fitting center ' + (angle === 90 ? (isSR ? '90° SR' : '90° LR') : '45° LR') + ' ' + size + '" · center-to-end ' + M.formatFraction(to.value);
+}
+
+// ---------- reducers ----------
+let lastReducersSummary = '';
+function fillSmallSizes() {
+  const large = $('rd-large').value;
+  const idx = T.PIPE.findIndex((p) => p.nps === large);
+  const sel = $('rd-small');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  T.PIPE.slice(0, idx).forEach((p) => {
+    const o = document.createElement('option');
+    o.value = p.nps; o.textContent = p.nps + '"';
+    sel.appendChild(o);
+  });
+  if (prev && [...sel.options].some((o) => o.value === prev)) sel.value = prev;
+  else if ([...sel.options].some((o) => o.value === '4')) sel.value = '4';
+}
+function drawReducerSVG(r) {
+  const svg = $('rd-svg');
+  const x0 = 66, x1 = 254, midY = 104;
+  const hL = Math.max(30, Math.min(96, r.largeOd * 13));
+  const hS = Math.max(16, Math.min(96, r.smallOd * 13));
+  let str = '';
+  if (r.type === 'eccentric') {
+    const top = midY - hL / 2;
+    str += '<path d="M' + x0 + ' ' + top + ' H' + x1 + ' V' + (top + hS) + ' L' + x0 + ' ' + (top + hL) + ' Z" class="svg-pipe" stroke-width="2"/>';
+    str += '<line x1="44" y1="' + (top + hL / 2) + '" x2="218" y2="' + (top + hL / 2) + '" class="svg-center"/>';
+    str += '<line x1="196" y1="' + (top + hS / 2) + '" x2="282" y2="' + (top + hS / 2) + '" class="svg-center"/>';
+    str += '<line x1="296" y1="' + (top + hS / 2) + '" x2="296" y2="' + (top + hL / 2) + '" class="svg-end"/>';
+    str += '<text x="248" y="' + (top + hS / 2 + (hL - hS) / 4 + 4) + '" class="svg-label">offset</text>';
+    str += '<text x="' + x0 + '" y="' + (top - 10) + '" class="svg-label">FLAT SIDE — the two outside faces line up</text>';
+  } else {
+    str += '<path d="M' + x0 + ' ' + (midY - hL / 2) + ' L' + x1 + ' ' + (midY - hS / 2) + ' V' + (midY + hS / 2) + ' L' + x0 + ' ' + (midY + hL / 2) + ' Z" class="svg-pipe" stroke-width="2"/>';
+    str += '<line x1="44" y1="' + midY + '" x2="282" y2="' + midY + '" class="svg-center"/>';
+    str += '<text x="' + x0 + '" y="' + (midY - hL / 2 - 10) + '" class="svg-label">one shared centerline — even all the way around</text>';
+  }
+  str += '<line x1="' + x0 + '" y1="186" x2="' + x1 + '" y2="186" class="svg-end"/>';
+  str += '<line x1="' + x0 + '" y1="179" x2="' + x0 + '" y2="193" class="svg-end"/><line x1="' + x1 + '" y1="179" x2="' + x1 + '" y2="193" class="svg-end"/>';
+  str += '<text x="138" y="204" class="svg-label">H = ' + M.formatFraction(r.length) + '</text>';
+  str += '<text x="' + (x0 - 6) + '" y="' + (midY + hL / 2 + 18) + '" class="svg-label dim">' + r.largeNps + '" end</text>';
+  str += '<text x="' + (x1 - 24) + '" y="' + (midY + hL / 2 + 18) + '" class="svg-label dim">' + r.smallNps + '" end</text>';
+  svg.innerHTML = str;
+}
+function calcReducers() {
+  const type = $('rd-type').value;
+  const r = M.reducer($('rd-large').value, $('rd-small').value, type);
+  if (!r) { $('rd-len').textContent = '—'; $('rd-outs').innerHTML = ''; $('rd-svg').innerHTML = ''; lastReducersSummary = ''; return; }
+  $('rd-len').textContent = M.formatFraction(r.length);
+  const row = (k, v) => '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>';
+  $('rd-outs').innerHTML =
+    row('Large end OD', r.largeOd.toFixed(3) + '"') +
+    row('Small end OD', r.smallOd.toFixed(3) + '"') +
+    (r.type === 'eccentric'
+      ? row('Centerline shift (offset)', fmt(r.offset))
+      : row('Centerline shift (offset)', '0 — ends share one centerline')) +
+    row('Source', 'ASME B16.9 — H set by the large end');
+  $('rd-note').textContent = r.type === 'eccentric'
+    ? 'Eccentric: one side is flat (flush), so the centerline shifts by the offset shown. Orientation matters: flat side UP on a horizontal pump suction, so air can\'t pocket at the top and get drawn into the pump; flat side DOWN where the line must drain completely or sit level on a rack (constant bottom-of-pipe). Same overall length as a concentric of the same sizes.'
+    : 'Concentric: the reduction is even all the way around and both ends share one centerline — the standard pick for vertical runs and anywhere the centerline has to stay put. Same overall length as an eccentric of the same sizes.';
+  drawReducerSVG(r);
+  lastReducersSummary = (r.type === 'eccentric' ? 'Eccentric' : 'Concentric') + ' reducer ' + r.largeNps + '" x ' + r.smallNps + '" · H ' + M.formatFraction(r.length) + (r.type === 'eccentric' ? ' · offset ' + M.formatFraction(r.offset) : '');
+}
+
 function calcData() {
   const d = M.pipeData($('d-size').value, $('d-sched').value);
   const p = T.byNps($('d-size').value);
@@ -369,6 +528,10 @@ onChange(['d-size', 'd-sched'], calcData);
 onChange(['p-set', 'p-angle', 'p-spread', 'p-count', 'p-size', 'p-type', 'p-gap'], calcParallel);
 onChange(['m-mode', 'm-turn', 'm-center', 'm-joints', 'm-radius'], calcMiter);
 onChange(['sd-branch', 'sd-header', 'sd-angle'], calcSaddle);
+onChange(['c-type', 'c-size'], calcCenters);
+onChange(['rd-type', 'rd-small'], calcReducers);
+$('rd-large').addEventListener('input', () => { fillSmallSizes(); calcReducers(); });
+$('rd-large').addEventListener('change', () => { fillSmallSizes(); calcReducers(); });
 onChange(['ref-in'], calcRefIn);
 onChange(['ref-mm'], calcRefMm);
 onChange(['ref-slope-inft'], () => calcRefSlope('inft'));
@@ -406,6 +569,16 @@ function buildReference() {
     T.PIPE.map((p) =>
       '<tr><td><strong>' + p.nps + '"</strong></td><td>' + M.formatFraction(p.a90) + '</td><td>' + M.formatFraction(p.b45) + '</td><td class="dimcell">' +
       (p.sr90 == null ? '—' : M.formatFraction(p.sr90)) + '</td></tr>'
+    ).join('') + '</tbody>';
+  $('ref-tee-table').innerHTML =
+    '<thead><tr><th>NPS</th><th>Run (C)</th><th>Branch (M)</th></tr></thead><tbody>' +
+    T.TEE.map((t) =>
+      '<tr><td><strong>' + t.nps + '"</strong></td><td>' + M.formatFraction(t.c) + '</td><td class="dimcell">' + M.formatFraction(t.c) + '</td></tr>'
+    ).join('') + '</tbody>';
+  $('ref-reducer-table').innerHTML =
+    '<thead><tr><th>Large end NPS</th><th>Length H</th></tr></thead><tbody>' +
+    Object.keys(T.REDUCER_H).map((k) =>
+      '<tr><td><strong>' + k + '"</strong></td><td class="dimcell">' + M.formatFraction(T.REDUCER_H[k]) + '</td></tr>'
     ).join('') + '</tbody>';
   $('ref-flange-table').innerHTML =
     '<thead><tr><th>NPS</th><th>Flange OD</th><th>Bolt circle</th><th>Bolts</th><th>Bolt dia</th></tr></thead><tbody>' +
@@ -476,6 +649,8 @@ $('r-save').addEventListener('click', () => saveCalc(lastRolling));
 $('p-save').addEventListener('click', () => saveCalc(lastParallel));
 $('m-save').addEventListener('click', () => saveText(lastMiterSummary));
 $('sd-save').addEventListener('click', () => saveText(lastSaddleSummary));
+$('c-save').addEventListener('click', () => saveText(lastCentersSummary));
+$('rd-save').addEventListener('click', () => saveText(lastReducersSummary));
 
 // ---------- PWA: offline shell for field dead zones ----------
 if ('serviceWorker' in navigator) {
@@ -484,7 +659,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-calcSimple(); calcRolling(); calcParallel(); calcMiter(); calcSaddle(); calcData(); buildReference(); calcReference(); renderSaved();
+fillSmallSizes(); calcSimple(); calcRolling(); calcParallel(); calcMiter(); calcSaddle(); calcCenters(); calcReducers(); calcData(); buildReference(); calcReference(); renderSaved();
 
 // Brand splash: the wordmark is drawn on by an electric arc (per-path stroke
 // draw with staggered timing), the fill floods in, then PIPE LAYOUT strikes

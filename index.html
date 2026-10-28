@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="style.css?v=11">
+<link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 <div id="splash" aria-hidden="true">
@@ -52,7 +52,7 @@
     <h1>Pipe Layout</h1>
   </div>
   <p class="sub">Offsets, miters, saddles &amp; cut lengths for the field. Verify every number before you cut.</p>
-  <p class="build">BUILD v1.5</p>
+  <p class="build">BUILD v1.6</p>
 </header>
 
 <main class="home-main">
@@ -82,6 +82,16 @@
       <span class="tile-name">Saddle</span>
       <span class="tile-desc">Wrap-around template ordinates for a branch</span>
     </button>
+    <button class="tile" data-open="centers">
+      <span class="tile-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20 V10 A6 6 0 0 1 10 4 H20"/><path d="M4 13 H13 V4" stroke-dasharray="3 2.4"/><circle cx="13" cy="13" r="1.6" fill="currentColor" stroke="none"/></svg></span>
+      <span class="tile-name">Fitting Centers</span>
+      <span class="tile-desc">Find the center of a 90, 45 or tee — with diagrams</span>
+    </button>
+    <button class="tile" data-open="reducers">
+      <span class="tile-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7 H10 L14 10 H21"/><path d="M3 17 H10 L14 14 H21"/></svg></span>
+      <span class="tile-name">Reducers</span>
+      <span class="tile-desc">Concentric &amp; eccentric — length and centerline shift</span>
+    </button>
     <button class="tile" data-open="data">
       <span class="tile-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="7" rx="1.5"/><path d="M7.5 9 V12.5"/><path d="M12 9 V12.5"/><path d="M16.5 9 V12.5"/></svg></span>
       <span class="tile-name">Pipe Data</span>
@@ -101,7 +111,7 @@
     <div class="topbar-in">
       <button id="btn-home" class="home-btn">← Home</button>
       <span id="tool-title" class="tool-title"></span>
-      <span class="build build-sm">BUILD v1.5</span>
+      <span class="build build-sm">BUILD v1.6</span>
     </div>
   </div>
 
@@ -394,6 +404,67 @@
   </div>
 </section>
 
+
+<!-- FITTING CENTERS -->
+<section id="panel-centers" class="panel">
+  <div class="grid">
+    <div class="card inputs">
+      <label>Fitting
+        <select id="c-type">
+          <option value="elbow90" selected>Elbow — 90° long radius</option>
+          <option value="elbow90sr">Elbow — 90° short radius</option>
+          <option value="elbow45">Elbow — 45° long radius</option>
+          <option value="tee">Tee — equal (straight)</option>
+        </select>
+      </label>
+      <label>Pipe size (NPS)
+        <select id="c-size"></select>
+      </label>
+      <p class="note" id="c-note"></p>
+    </div>
+    <div class="card results">
+      <div class="hero"><span class="hero-label" id="c-hero-label">CENTER-TO-END</span><span id="c-main" class="hero-value">—</span></div>
+      <dl class="outs" id="c-outs"></dl>
+      <p id="c-warn" class="warn" hidden></p>
+      <div class="svgstage">
+        <svg id="c-svg" viewBox="0 0 340 240" role="img" aria-label="How to find the fitting center"></svg>
+        <div class="stage-hint">Schematic — not to scale</div>
+      </div>
+      <button id="c-save" class="save">Save this calculation</button>
+    </div>
+  </div>
+</section>
+
+<!-- REDUCERS -->
+<section id="panel-reducers" class="panel">
+  <div class="grid">
+    <div class="card inputs">
+      <label>Reducer type
+        <select id="rd-type">
+          <option value="concentric" selected>Concentric — one shared centerline</option>
+          <option value="eccentric">Eccentric — one flat (flush) side</option>
+        </select>
+      </label>
+      <label>Large end (NPS)
+        <select id="rd-large"></select>
+      </label>
+      <label>Small end (NPS)
+        <select id="rd-small"></select>
+      </label>
+      <p class="note" id="rd-note"></p>
+    </div>
+    <div class="card results">
+      <div class="hero"><span class="hero-label">OVERALL LENGTH — FACE TO FACE (H)</span><span id="rd-len" class="hero-value">—</span></div>
+      <dl class="outs" id="rd-outs"></dl>
+      <div class="svgstage">
+        <svg id="rd-svg" viewBox="0 0 340 230" role="img" aria-label="Reducer side view"></svg>
+        <div class="stage-hint">Schematic — not to scale</div>
+      </div>
+      <button id="rd-save" class="save">Save this calculation</button>
+    </div>
+  </div>
+</section>
+
 <!-- PIPE DATA -->
 <section id="panel-data" class="panel">
   <div class="card inputs">
@@ -464,6 +535,18 @@
   </div>
 
   <div class="card ref-card">
+    <h2 class="ref-title">Tee centers — center-to-end (ASME B16.9)</h2>
+    <div class="ref-wrap"><table class="ords" id="ref-tee-table" aria-label="Equal tee center-to-end table"></table></div>
+    <p class="note">Equal tee: run (C) and branch (M) center-to-end are the same at every size shown — the center is where the branch centerline crosses the run centerline.</p>
+  </div>
+
+  <div class="card ref-card">
+    <h2 class="ref-title">Reducer lengths — face-to-face H (ASME B16.9)</h2>
+    <div class="ref-wrap"><table class="ords" id="ref-reducer-table" aria-label="Reducer overall length table"></table></div>
+    <p class="note">H is set by the <strong>large</strong> end and is the same for concentric and eccentric, and for every smaller end paired with that large end. An eccentric also shifts the centerline by (large OD − small OD) ÷ 2 — use the Reducers tool for that number.</p>
+  </div>
+
+  <div class="card ref-card">
     <h2 class="ref-title">Flange bolt-up — Class 150 (ASME B16.5)</h2>
     <div class="ref-wrap"><table class="ords" id="ref-flange-table" aria-label="Class 150 flange bolt-up table"></table></div>
     <p class="note">Drilling dimensions only — the same for every Class 150 flange type of a size (weld neck, slip-on, blind…). Confirm the class before you rely on it: Class 300 drills differently.</p>
@@ -480,14 +563,14 @@
 <footer>
   <p><strong>Built for the field — verify every number before you cut.</strong>
   Take-outs: ASME B16.9 LR table for 45°/90° (exact); SR exact at 90° only; other angles are approximations and are flagged in place.
-  Cut length = travel − both take-outs − both root gaps. Saddle layouts are OD-based and assume the branch centerline hits the header centerline.
+  Tee centers and reducer lengths: ASME B16.9 (reducer H set by the large end, same for concentric and eccentric). Cut length = travel − both take-outs − both root gaps. Saddle layouts are OD-based and assume the branch centerline hits the header centerline.
   Always verify against the fitting in your hand.</p>
   <p class="brand-credit"><img src="brand-wordmark.svg" alt="Faust Skunkwerks" class="brand-credit-logo"></p>
 </footer>
 
-<script src="/core/tables.js?v=11"></script>
-<script src="/core/pipeMath.js?v=11"></script>
-<script src="pipe3d.js?v=11"></script>
-<script src="app.js?v=11"></script>
+<script src="/core/tables.js?v=12"></script>
+<script src="/core/pipeMath.js?v=12"></script>
+<script src="pipe3d.js?v=12"></script>
+<script src="app.js?v=12"></script>
 </body>
 </html>
