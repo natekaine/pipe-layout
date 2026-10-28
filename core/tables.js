@@ -64,9 +64,32 @@
     { nps: '10',    flangeOd: 16.00, boltCircle: 14.25,  bolts: 12, boltDia: 0.875 },
     { nps: '12',    flangeOd: 19.00, boltCircle: 17.00,  bolts: 12, boltDia: 0.875 },
   ];
+  // ASME B16.9 equal (straight) tee: center-to-end of the run (C) and of
+  // the branch outlet (M). C equals M at every size NPS 1/2 through 12.
+  // Cross-checked Oct 28 2026 against three published reproductions of the
+  // B16.9 tee table.
+  const TEE = [
+    { nps: '1/2', c: 1.00 }, { nps: '3/4', c: 1.12 }, { nps: '1', c: 1.50 },
+    { nps: '1-1/4', c: 1.88 }, { nps: '1-1/2', c: 2.25 }, { nps: '2', c: 2.50 },
+    { nps: '2-1/2', c: 3.00 }, { nps: '3', c: 3.38 }, { nps: '3-1/2', c: 3.75 },
+    { nps: '4', c: 4.12 }, { nps: '5', c: 4.88 }, { nps: '6', c: 5.62 },
+    { nps: '8', c: 7.00 }, { nps: '10', c: 8.50 }, { nps: '12', c: 10.00 },
+  ];
+  // ASME B16.9 reducer overall length (face-to-face, H), keyed by the
+  // LARGER end NPS. One H covers concentric and eccentric alike, and every
+  // smaller end paired with that large end, independent of schedule.
+  // Cross-checked Oct 28 2026 against the B16.9 reducer table as published
+  // in three reproductions.
+  const REDUCER_H = {
+    '3/4': 1.50, '1': 2.00, '1-1/4': 2.00, '1-1/2': 2.50, '2': 3.00,
+    '2-1/2': 3.50, '3': 3.50, '3-1/2': 4.00, '4': 4.00, '5': 5.00,
+    '6': 5.50, '8': 6.00, '10': 7.00, '12': 8.00,
+  };
   function byNps(nps) { return PIPE.find((p) => p.nps === nps) || null; }
   function flange150(nps) { return FLANGE150.find((f) => f.nps === nps) || null; }
-  const api = { PIPE, byNps, FLANGE150, flange150 };
+  function tee(nps) { return TEE.find((t) => t.nps === nps) || null; }
+  function reducerH(nps) { return Object.prototype.hasOwnProperty.call(REDUCER_H, nps) ? REDUCER_H[nps] : null; }
+  const api = { PIPE, byNps, FLANGE150, flange150, TEE, tee, REDUCER_H, reducerH };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PipeTables = api;
 })(typeof window !== 'undefined' ? window : globalThis);

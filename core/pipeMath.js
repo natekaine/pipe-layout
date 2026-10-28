@@ -253,6 +253,34 @@
     return { set, angleDeg, spread, count, travel: base.travel, run: base.run, gain, pipes };
   }
 
+  // Fitting centers: the center of a fitting is where its end centerlines
+  // cross. For elbows that distance (face to center) is the take-out above;
+  // for an equal tee, B16.9 gives run center-to-end C and branch M, equal
+  // at every size in this range.
+  function teeCenter(nps) {
+    const t = Tables.tee(nps);
+    if (!t) return null;
+    return { nps, run: t.c, branch: t.c };
+  }
+
+  // Butt-weld reducer (ASME B16.9): overall length H is set by the larger
+  // end and is the same for concentric and eccentric. A concentric keeps
+  // one shared centerline; an eccentric has one flush (flat) side, so its
+  // centerline shifts by half the OD difference: (OD_large - OD_small) / 2.
+  function reducer(largeNps, smallNps, type) {
+    const L = Tables.byNps(largeNps);
+    const S = Tables.byNps(smallNps);
+    if (!L || !S) return null;
+    const H = Tables.reducerH(largeNps);
+    if (H == null) return null;
+    const eccentric = type === 'eccentric';
+    return {
+      largeNps, smallNps, type: eccentric ? 'eccentric' : 'concentric',
+      length: H, largeOd: L.od, smallOd: S.od,
+      offset: eccentric ? (L.od - S.od) / 2 : 0,
+    };
+  }
+
   function pipeData(nps, schedule) {
     const p = Tables.byNps(nps);
     if (!p) return null;
@@ -299,7 +327,7 @@
     return { inPerFt: 12 * tan, degrees: deg(Math.atan(tan)), percent: 100 * tan };
   }
 
-  const api = { parseMeasurement, formatFraction, formatDecimal, simpleOffset, rollingOffset, parallelOffset, takeout, cutLength, pipeData, singleMiter, segmentedMiter, saddle, MM_PER_INCH, inchesToMm, mmToInches, fractionChart, circumference, slope };
+  const api = { parseMeasurement, formatFraction, formatDecimal, simpleOffset, rollingOffset, parallelOffset, takeout, cutLength, teeCenter, reducer, pipeData, singleMiter, segmentedMiter, saddle, MM_PER_INCH, inchesToMm, mmToInches, fractionChart, circumference, slope };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PipeMath = api;
 })(typeof window !== 'undefined' ? window : globalThis);
