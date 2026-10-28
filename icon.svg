@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect x="28" y="28" width="456" height="456" rx="96" fill="#171c26" stroke="#2b3342" stroke-width="6"/>
+  <!-- steel run -->
+  <rect x="72" y="262" width="240" height="108" fill="#7e93a8"/>
+  <rect x="72" y="262" width="240" height="38" fill="#9eb2c6"/>
+  <!-- orange elbow -->
+  <path d="M254 370 L254 82 L362 82 L362 316 A54 54 0 0 1 308 370 Z" fill="#f5a623"/>
+  <rect x="254" y="82" width="38" height="236" fill="#ffb84d"/>
+  <!-- bores -->
+  <circle cx="95" cy="316" r="30" fill="#0a0c0e"/>
+  <circle cx="308" cy="105" r="30" fill="#0a0c0e"/>
+</svg>
