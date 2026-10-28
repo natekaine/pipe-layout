@@ -655,7 +655,7 @@ $('rd-save').addEventListener('click', () => saveText(lastReducersSummary));
 // ---------- PWA: offline shell for field dead zones ----------
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => { /* offline support is a bonus, never a blocker */ });
+    navigator.serviceWorker.register('sw.js').catch(() => { /* offline support is a bonus, never a blocker */ });
   });
 }
 
