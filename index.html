@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="style.css?v=13">
+<link rel="stylesheet" href="style.css?v=14">
 </head>
 <body>
 <div id="splash" aria-hidden="true">
@@ -52,7 +52,7 @@
     <h1>Pipe Layout</h1>
   </div>
   <p class="sub">Offsets, miters, saddles &amp; cut lengths for the field. Verify every number before you cut.</p>
-  <p class="build">BUILD v1.7</p>
+  <p class="build">BUILD v1.8</p>
 </header>
 
 <main class="home-main">
@@ -111,7 +111,7 @@
     <div class="topbar-in">
       <button id="btn-home" class="home-btn">← Home</button>
       <span id="tool-title" class="tool-title"></span>
-      <span class="build build-sm">BUILD v1.7</span>
+      <span class="build build-sm">BUILD v1.8</span>
     </div>
   </div>
 
@@ -440,6 +440,12 @@
       <svg id="c-svg2" viewBox="0 0 340 240" role="img" aria-label="How to mark the center in the field"></svg>
       <div class="stage-hint">Schematic — not to scale</div>
     </div>
+    <h2 class="ref-title" style="margin-top:18px">Finding the center on the face</h2>
+    <ol class="steps" id="c-face-steps"></ol>
+    <div class="svgstage">
+      <svg id="c-svg3" viewBox="0 0 340 220" role="img" aria-label="Finding the center on a fitting face"></svg>
+      <div class="stage-hint">Face view — schematic, not to scale</div>
+    </div>
   </div>
 </section>
 
@@ -469,6 +475,20 @@
         <div class="stage-hint">Schematic — not to scale</div>
       </div>
       <button id="rd-save" class="save">Save this calculation</button>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <h2 class="ref-title">Finding &amp; marking the center in the field</h2>
+    <ol class="steps" id="rd-steps"></ol>
+    <div class="svgstage">
+      <svg id="rd-svg2" viewBox="0 0 340 230" role="img" aria-label="Table layout for a reducer center"></svg>
+      <div class="stage-hint">Schematic — not to scale</div>
+    </div>
+    <h2 class="ref-title" style="margin-top:18px">Finding the center on each face</h2>
+    <ol class="steps" id="rd-face-steps"></ol>
+    <div class="svgstage">
+      <svg id="rd-svg3" viewBox="0 0 340 220" role="img" aria-label="Finding the center on a reducer face"></svg>
+      <div class="stage-hint">Face view — schematic, not to scale</div>
     </div>
   </div>
 </section>
@@ -576,9 +596,9 @@
   <p class="brand-credit"><img src="brand-wordmark.svg" alt="Faust Skunkwerks" class="brand-credit-logo"></p>
 </footer>
 
-<script src="core/tables.js?v=13"></script>
-<script src="core/pipeMath.js?v=13"></script>
-<script src="pipe3d.js?v=13"></script>
-<script src="app.js?v=13"></script>
+<script src="core/tables.js?v=14"></script>
+<script src="core/pipeMath.js?v=14"></script>
+<script src="pipe3d.js?v=14"></script>
+<script src="app.js?v=14"></script>
 </body>
 </html>
