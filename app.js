@@ -398,6 +398,50 @@ function drawCentersSVG(kind, valTxt) {
   }
   svg.innerHTML = str;
 }
+
+const MARK_STEPS = {
+  elbow: [
+    'Get each face working for you: lay a straightedge — the leg of a framing square works — flat across an end face so it points straight out along that leg.',
+    'Project the leg\'s centerline off the straightedge, out past the corner of the fitting. A string line, laser, or a soapstone line on the bench all work.',
+    'Do the same off the other face. The two projected centerlines cross at one point — that crossing is the center.',
+    'Mark it: center-punch the point on a bench layout. Working on a run instead, hook your tape on a face and measure the center-to-end along the centerline — where the tape lands is your center mark on the layout line.',
+    'Check yourself: measure from both faces. Both measurements have to land on the same point — if they don\'t, a straightedge isn\'t sitting flat on a face.',
+  ],
+  tee: [
+    'Hook your tape on one run face and measure C along the run\'s top centerline. Mark the point.',
+    'Measure C again from the other run face. On an equal tee both marks land on the same point — that\'s your run center. If they don\'t agree, split the difference and re-check your faces.',
+    'Scribe that point around the run with a wrap-around (or project it with a square) so the mark reads on both sides of the pipe, not just the top.',
+    'The branch center is the same point — the branch centerline passes through it. Confirm by measuring M down from the branch face: it should land on your mark.',
+  ],
+};
+function drawMarkSVG(kind, valTxt) {
+  const svg = $('c-svg2');
+  let str = '';
+  if (kind === 'tee') {
+    str += '<path d="M50 130 H290 V170 H50 Z M148 40 H192 V130 H148 Z" class="svg-pipe" stroke-width="2"/>';
+    str += '<line x1="170" y1="112" x2="170" y2="188" class="svg-center"/>';
+    str += '<line x1="50" y1="204" x2="170" y2="204" class="svg-end"/>';
+    str += '<line x1="50" y1="197" x2="50" y2="211" class="svg-end"/><line x1="170" y1="197" x2="170" y2="211" class="svg-end"/>';
+    str += '<text x="62" y="222" class="svg-label">tape C = ' + valTxt + ' from run face</text>';
+    str += '<line x1="228" y1="40" x2="228" y2="150" class="svg-end"/>';
+    str += '<line x1="221" y1="40" x2="235" y2="40" class="svg-end"/><line x1="221" y1="150" x2="235" y2="150" class="svg-end"/>';
+    str += '<text x="240" y="99" class="svg-label">M confirms it</text>';
+    str += '<circle cx="170" cy="150" r="4.5" class="svg-dot"/>';
+    str += '<text x="182" y="140" class="svg-label">MARK — scribe it around the run</text>';
+    str += '<text x="30" y="18" class="svg-label dim">check C from both run faces — both marks must agree</text>';
+  } else {
+    str += '<path d="M60 172 H193 A44 44 0 0 0 237 128 V35 H193 V128 A0 0 0 0 0 193 128 H60 Z" class="svg-pipe" stroke-width="2"/>';
+    str += '<rect x="50" y="102" width="7" height="96" class="svg-pipe" stroke-width="2"/>';
+    str += '<rect x="168" y="26" width="94" height="7" class="svg-pipe" stroke-width="2"/>';
+    str += '<line x1="36" y1="150" x2="215" y2="150" class="svg-center"/>';
+    str += '<line x1="215" y1="150" x2="215" y2="14" class="svg-center"/>';
+    str += '<circle cx="215" cy="150" r="6" class="svg-curve"/><path d="M211 146 L219 154 M219 146 L211 154" class="svg-cut"/>';
+    str += '<text x="30" y="216" class="svg-label">straightedge flat on each face — project both centerlines</text>';
+    str += '<text x="120" y="138" class="svg-label">PUNCH THE CENTER</text>';
+    str += '<text x="36" y="18" class="svg-label dim">on a run: tape ' + valTxt + ' back from a face along the centerline</text>';
+  }
+  svg.innerHTML = str;
+}
 function calcCenters() {
   const kind = $('c-type').value;
   const size = $('c-size').value;
@@ -416,6 +460,8 @@ function calcCenters() {
       row('Pipe OD', p.od.toFixed(3) + '"') +
       row('Source', 'ASME B16.9 equal tee');
     drawCentersSVG('tee', M.formatFraction(tc.run));
+    $('c-steps').innerHTML = MARK_STEPS.tee.map((t) => '<li>' + t + '</li>').join('');
+    drawMarkSVG('tee', M.formatFraction(tc.run));
     lastCentersSummary = 'Tee center ' + size + '" · C = M = ' + M.formatFraction(tc.run);
     return;
   }
@@ -425,7 +471,7 @@ function calcCenters() {
   if (!to) {
     warn.hidden = false;
     warn.textContent = 'ASME B16.9 doesn\'t publish a short-radius 90 below NPS 1 — pick long radius or a larger size.';
-    $('c-main').textContent = '—'; $('c-outs').innerHTML = ''; $('c-svg').innerHTML = '';
+    $('c-main').textContent = '—'; $('c-outs').innerHTML = ''; $('c-svg').innerHTML = ''; $('c-svg2').innerHTML = ''; $('c-steps').innerHTML = '';
     lastCentersSummary = '';
     return;
   }
@@ -437,6 +483,8 @@ function calcCenters() {
     row('Pipe OD', p.od.toFixed(3) + '"') +
     row('Source', to.source + (to.exact ? ' (exact)' : ' (approx)'));
   drawCentersSVG(kind, M.formatFraction(to.value));
+  $('c-steps').innerHTML = MARK_STEPS.elbow.map((t) => '<li>' + t + '</li>').join('');
+  drawMarkSVG('elbow', M.formatFraction(to.value));
   lastCentersSummary = 'Fitting center ' + (angle === 90 ? (isSR ? '90° SR' : '90° LR') : '45° LR') + ' ' + size + '" · center-to-end ' + M.formatFraction(to.value);
 }
 

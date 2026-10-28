@@ -178,3 +178,7 @@ footer { max-width: 920px; margin: 0 auto; padding: 18px 16px 26px; color: var(-
   #splash.play .splash-app { animation: none; opacity: 1; } }
 .brand-credit { text-align: center; margin: 14px 0 2px; }
 .brand-credit-logo { width: 118px; height: auto; opacity: .55; }
+
+.steps { margin: 4px 0 10px; padding-left: 22px; font-size: 14.5px; line-height: 1.55; color: var(--txt); }
+.steps li { margin-bottom: 7px; }
+.steps li::marker { color: var(--accent); font-weight: 800; }

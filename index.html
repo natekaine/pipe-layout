@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="style.css?v=12">
+<link rel="stylesheet" href="style.css?v=13">
 </head>
 <body>
 <div id="splash" aria-hidden="true">
@@ -52,7 +52,7 @@
     <h1>Pipe Layout</h1>
   </div>
   <p class="sub">Offsets, miters, saddles &amp; cut lengths for the field. Verify every number before you cut.</p>
-  <p class="build">BUILD v1.6</p>
+  <p class="build">BUILD v1.7</p>
 </header>
 
 <main class="home-main">
@@ -111,7 +111,7 @@
     <div class="topbar-in">
       <button id="btn-home" class="home-btn">← Home</button>
       <span id="tool-title" class="tool-title"></span>
-      <span class="build build-sm">BUILD v1.6</span>
+      <span class="build build-sm">BUILD v1.7</span>
     </div>
   </div>
 
@@ -433,6 +433,14 @@
       <button id="c-save" class="save">Save this calculation</button>
     </div>
   </div>
+  <div class="card" style="margin-top:14px">
+    <h2 class="ref-title">Marking the center in the field</h2>
+    <ol class="steps" id="c-steps"></ol>
+    <div class="svgstage">
+      <svg id="c-svg2" viewBox="0 0 340 240" role="img" aria-label="How to mark the center in the field"></svg>
+      <div class="stage-hint">Schematic — not to scale</div>
+    </div>
+  </div>
 </section>
 
 <!-- REDUCERS -->
@@ -568,9 +576,9 @@
   <p class="brand-credit"><img src="brand-wordmark.svg" alt="Faust Skunkwerks" class="brand-credit-logo"></p>
 </footer>
 
-<script src="core/tables.js?v=12"></script>
-<script src="core/pipeMath.js?v=12"></script>
-<script src="pipe3d.js?v=12"></script>
-<script src="app.js?v=12"></script>
+<script src="core/tables.js?v=13"></script>
+<script src="core/pipeMath.js?v=13"></script>
+<script src="pipe3d.js?v=13"></script>
+<script src="app.js?v=13"></script>
 </body>
 </html>
