@@ -443,30 +443,6 @@ function drawMarkSVG(kind, valTxt) {
   svg.innerHTML = str;
 }
 
-const FACE_STEPS = [
-  'Measure straight across the face with a tape or square — that\'s the diameter (use the OD from the Pipe Data tool if you want the book number).',
-  'Mark half of it in from the rim. Do it from the opposite side too — the two half marks should land on the same point.',
-  'Roll the fitting a quarter turn and repeat. The two diameter lines cross at the face center — punch it.',
-  'For lining up: extend the cross out to the rim. Those four quarter marks (top, bottom, both sides) are your clocking marks — match them to the centerline marks on the mating pipe or fitting and the fitting can\'t sit rolled.',
-];
-function drawFaceSVG(id) {
-  const svg = $(id);
-  if (!svg) return;
-  let str = '';
-  str += '<circle cx="150" cy="110" r="78" class="svg-pipe" stroke-width="2"/>';
-  str += '<circle cx="150" cy="110" r="58" class="svg-grid"/>';
-  str += '<line x1="62" y1="110" x2="238" y2="110" class="svg-center"/>';
-  str += '<line x1="150" y1="22" x2="150" y2="198" class="svg-center"/>';
-  str += '<circle cx="150" cy="110" r="6" class="svg-curve"/><path d="M146 106 L154 114 M154 106 L146 114" class="svg-cut"/>';
-  str += '<text x="160" y="100" class="svg-label">FACE CENTER — punch it</text>';
-  str += '<text x="150" y="14" class="svg-label dim" text-anchor="middle">quarter marks at the rim = your clocking marks</text>';
-  str += '<line x1="62" y1="110" x2="106" y2="110" class="svg-end"/>';
-  str += '<text x="52" y="96" class="svg-label dim">mark half, from both sides</text>';
-  str += '<text x="248" y="104" class="svg-label">line the quarter</text>';
-  str += '<text x="248" y="120" class="svg-label">marks up with</text>';
-  str += '<text x="248" y="136" class="svg-label">the mating piece</text>';
-  svg.innerHTML = str;
-}
 function calcCenters() {
   const kind = $('c-type').value;
   const size = $('c-size').value;
@@ -474,8 +450,6 @@ function calcCenters() {
   const warn = $('c-warn');
   warn.hidden = true;
   $('c-note').textContent = CENTER_NOTES[kind];
-  $('c-face-steps').innerHTML = FACE_STEPS.map((t) => '<li>' + t + '</li>').join('');
-  drawFaceSVG('c-svg3');
   const row = (k, v) => '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>';
   if (kind === 'tee') {
     const tc = M.teeCenter(size);
@@ -573,11 +547,6 @@ const RED_STEPS = {
     'Mark the centerline on the outside with a wrap-around or centering head so it reads around the fitting, then line that mark up with the centerline marks on your pipe.',
   ],
 };
-const RED_FACE_STEPS = [
-  'Find each end\'s face center separately, the same way as any fitting: measure across the face, mark half from both sides, quarter-turn and repeat — the cross is the center.',
-  'Concentric: the two face centers sit on one shared centerline, so the marks line straight through.',
-  'Eccentric: the small end\'s face center sits off the large end\'s centerline by the offset shown above — toward the sloped side, away from the flat side. Lay that shift out before you tack, or the run will be off by exactly that much.',
-];
 function drawReducerMarkSVG(r) {
   const svg = $('rd-svg2');
   let str = '';
@@ -601,7 +570,7 @@ function drawReducerMarkSVG(r) {
 function calcReducers() {
   const type = $('rd-type').value;
   const r = M.reducer($('rd-large').value, $('rd-small').value, type);
-  if (!r) { $('rd-len').textContent = '—'; $('rd-outs').innerHTML = ''; $('rd-svg').innerHTML = ''; $('rd-svg2').innerHTML = ''; $('rd-svg3').innerHTML = ''; $('rd-steps').innerHTML = ''; $('rd-face-steps').innerHTML = ''; lastReducersSummary = ''; return; }
+  if (!r) { $('rd-len').textContent = '—'; $('rd-outs').innerHTML = ''; $('rd-svg').innerHTML = ''; $('rd-svg2').innerHTML = ''; $('rd-steps').innerHTML = ''; lastReducersSummary = ''; return; }
   $('rd-len').textContent = M.formatFraction(r.length);
   const row = (k, v) => '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>';
   $('rd-outs').innerHTML =
@@ -616,9 +585,7 @@ function calcReducers() {
     : 'Concentric: the reduction is even all the way around and both ends share one centerline — the standard pick for vertical runs and anywhere the centerline has to stay put. Same overall length as an eccentric of the same sizes.';
   drawReducerSVG(r);
   $('rd-steps').innerHTML = RED_STEPS[r.type].map((t) => '<li>' + t + '</li>').join('');
-  $('rd-face-steps').innerHTML = RED_FACE_STEPS.map((t) => '<li>' + t + '</li>').join('');
   drawReducerMarkSVG(r);
-  drawFaceSVG('rd-svg3');
   lastReducersSummary = (r.type === 'eccentric' ? 'Eccentric' : 'Concentric') + ' reducer ' + r.largeNps + '" x ' + r.smallNps + '" · H ' + M.formatFraction(r.length) + (r.type === 'eccentric' ? ' · offset ' + M.formatFraction(r.offset) : '');
 }
 
