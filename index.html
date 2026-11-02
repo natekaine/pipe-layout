@@ -428,6 +428,20 @@
         </select>
       </label>
       <div id="h-dists"></div>
+      <label>Start of the line
+        <select id="h-end-start">
+          <option value="open" selected>Open — plain pipe end</option>
+          <option value="LR">90° elbow — long radius</option>
+          <option value="SR">90° elbow — short radius</option>
+        </select>
+      </label>
+      <label>Far end of the line
+        <select id="h-end-far">
+          <option value="open" selected>Open — plain pipe end</option>
+          <option value="LR">90° elbow — long radius</option>
+          <option value="SR">90° elbow — short radius</option>
+        </select>
+      </label>
       <label>Root gap (each joint)
         <select id="h-gap">
           <option value="0">0</option>
@@ -437,7 +451,7 @@
           <option value="0.1875">3/16"</option>
         </select>
       </label>
-      <p class="note">Measure every span to the tee CENTERS — end of the line to the first tee center, then center-to-center between tees. The cut list takes out the tee take-outs and root gaps for you. Branch size doesn't change the run cuts: a reducing tee's run take-out is the same as an equal tee's at the header size (ASME B16.9).</p>
+      <p class="note">Measure every span to the tee CENTERS — end of the line to the first tee center, then center-to-center between tees. Put a 90 on an end and that end's span measures to the ELBOW's center instead of the pipe end — the cut list takes out the elbow take-out and an extra root gap on that piece. Branch size doesn't change the run cuts: a reducing tee's run take-out is the same as an equal tee's at the header size (ASME B16.9).</p>
     </div>
     <div class="card results">
       <div class="hero"><span class="hero-label">TOTAL LENGTH — END TO END</span><span id="h-total" class="hero-value">—</span></div>

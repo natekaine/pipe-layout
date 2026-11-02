@@ -398,6 +398,14 @@ function drawHeaderSVG(h) {
   str += '<line x1="' + x0 + '" y1="' + dimY + '" x2="' + x1 + '" y2="' + dimY + '" class="svg-end"/>';
   str += '<line x1="' + x0 + '" y1="' + (dimY - 6) + '" x2="' + x0 + '" y2="' + (dimY + 6) + '" class="svg-end"/><line x1="' + x1 + '" y1="' + (dimY - 6) + '" x2="' + x1 + '" y2="' + (dimY + 6) + '" class="svg-end"/>';
   str += '<text x="' + ((x0 + x1) / 2 - 42) + '" y="' + (dimY + 20) + '" class="svg-label">TOTAL ' + M.formatFraction(h.total) + '</text>';
+  if (h.startTakeout) {
+    str += '<rect x="' + (x0 - 8) + '" y="' + (pipeY - 46) + '" width="16" height="46" class="svg-pipe" stroke-width="2"/>';
+    str += '<text x="' + (x0 - 10) + '" y="' + (pipeY - 54) + '" class="svg-label">90°</text>';
+  }
+  if (h.farTakeout) {
+    str += '<rect x="' + (x1 - 8) + '" y="' + (pipeY - 46) + '" width="16" height="46" class="svg-pipe" stroke-width="2"/>';
+    str += '<text x="' + (x1 - 10) + '" y="' + (pipeY - 54) + '" class="svg-label">90°</text>';
+  }
   str += '<text x="' + x0 + '" y="18" class="svg-label dim">numbers are the tees — marks are in the list above</text>';
   svg.innerHTML = str;
 }
@@ -414,18 +422,39 @@ function calcHeader() {
     lastHeaderSummary = '';
     return;
   }
-  const h = M.header(size, spans, gap);
+  // End fittings: 'open' = plain pipe end (take-out 0); LR/SR = a 90 on
+  // that end, span measured to the elbow's center. takeout() returns
+  // null for SR below NPS 1 — same guard as the offset tools.
+  const endTO = (selId) => {
+    const v = $(selId).value;
+    if (v === 'open') return { value: 0, label: '' };
+    const to = M.takeout(size, 90, v);
+    if (!to) return null;
+    return { value: to.value, label: '90° ' + v };
+  };
+  const startEnd = endTO('h-end-start');
+  const farEnd = endTO('h-end-far');
+  if (!startEnd || !farEnd) {
+    warn.hidden = false;
+    warn.textContent = 'ASME B16.9 doesn\'t publish a short-radius 90 below NPS 1 — no SR take-out exists for ' + size + '" pipe. Switch that end to long radius or open.';
+    $('h-total').textContent = '—'; $('h-outs').innerHTML = ''; $('h-cuts').innerHTML = ''; $('h-marks').innerHTML = ''; $('h-svg').innerHTML = '';
+    lastHeaderSummary = '';
+    return;
+  }
+  const h = M.header(size, spans, gap, [startEnd.value, farEnd.value]);
   if (!h) return;
   const row = (k, v) => '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>';
   $('h-total').textContent = M.formatFraction(h.total);
   $('h-outs').innerHTML =
     row('Tee take-out — run, each end (C)', fmt(h.runTakeout)) +
+    (startEnd.value ? row('Start end — ' + startEnd.label + ' take-out', fmt(startEnd.value)) : '') +
+    (farEnd.value ? row('Far end — ' + farEnd.label + ' take-out', fmt(farEnd.value)) : '') +
     row('Tees', h.teeCount + ' × ' + size + '" (run size)') +
     row('Root gap (each joint)', M.formatFraction(gap)) +
-    row('Source', 'ASME B16.9 tee — run center-to-end');
+    row('Source', 'ASME B16.9 tee & elbow — center-to-end');
   const pieceName = (p) => {
-    if (p.index === 1) return 'start end';
-    if (p.index === h.pieces.length) return 'far end';
+    if (p.index === 1) return startEnd.value ? 'start end (' + startEnd.label + ')' : 'start end';
+    if (p.index === h.pieces.length) return farEnd.value ? 'far end (' + farEnd.label + ')' : 'far end';
     return 'Tee ' + (p.index - 1) + ' to Tee ' + p.index;
   };
   $('h-cuts').innerHTML = '<div class="prow"><b>Cut list</b><span></span></div>' + h.pieces.map((p) =>
@@ -436,7 +465,10 @@ function calcHeader() {
   warn.hidden = h.valid;
   if (!h.valid) warn.textContent = 'Piece ' + badPiece.index + ' (' + pieceName(badPiece) + ') comes out at ' + M.formatFraction(badPiece.cut) + ' — that span is too short for the tee take-outs' + (gap ? ' plus root gaps' : '') + '. Widen the spacing.';
   drawHeaderSVG(h);
-  lastHeaderSummary = 'Header ' + size + '" · ' + h.teeCount + ' tees · total ' + M.formatFraction(h.total) + ' · cuts ' + h.pieces.map((p) => M.formatFraction(p.cut)).join(', ');
+  lastHeaderSummary = 'Header ' + size + '" · ' + h.teeCount + ' tees · total ' + M.formatFraction(h.total) +
+    (startEnd.value ? ' · start ' + startEnd.label : ' · start open') +
+    (farEnd.value ? ' · far ' + farEnd.label : ' · far open') +
+    ' · cuts ' + h.pieces.map((p) => M.formatFraction(p.cut)).join(', ');
 }
 
 // ---------- fitting centers ----------
@@ -709,7 +741,7 @@ onChange(['p-set', 'p-angle', 'p-spread', 'p-count', 'p-size', 'p-type', 'p-gap'
 onChange(['m-mode', 'm-turn', 'm-center', 'm-joints', 'm-radius'], calcMiter);
 onChange(['sd-branch', 'sd-header', 'sd-angle'], calcSaddle);
 onChange(['c-type', 'c-size'], calcCenters);
-onChange(['h-size', 'h-gap'], calcHeader);
+onChange(['h-size', 'h-gap', 'h-end-start', 'h-end-far'], calcHeader);
 const onHeaderCount = () => { buildHeaderDists(); calcHeader(); };
 $('h-count').addEventListener('input', onHeaderCount);
 $('h-count').addEventListener('change', onHeaderCount);
