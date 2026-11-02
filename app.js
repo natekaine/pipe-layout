@@ -15,12 +15,12 @@ function fillSizes(id, dflt) {
 }
 fillSizes('s-size', '2'); fillSizes('r-size', '2'); fillSizes('d-size', '2'); fillSizes('p-size', '2');
 fillSizes('m-size', '6'); fillSizes('sd-branch', '2'); fillSizes('sd-header', '6');
-fillSizes('c-size', '2'); fillSizes('rd-large', '6');
+fillSizes('c-size', '2'); fillSizes('rd-large', '6'); fillSizes('h-size', '4');
 
 // navigation — home entry screen with one tool open at a time. Opening a
 // tool also recomputes it, so its results and diagrams are always fresh the
 // moment the panel becomes visible.
-const TOOL_TITLES = { simple: 'Simple Offset', rolling: 'Rolling Offset', parallel: 'Parallel', miter: 'Miter', saddle: 'Saddle', centers: 'Fitting Centers', reducers: 'Reducers', data: 'Pipe Data', reference: 'Reference' };
+const TOOL_TITLES = { simple: 'Simple Offset', rolling: 'Rolling Offset', parallel: 'Parallel', miter: 'Miter', saddle: 'Saddle', header: 'Header', centers: 'Fitting Centers', reducers: 'Reducers', data: 'Pipe Data', reference: 'Reference' };
 let lastTool = null; // most recent tool, kept for this page session only
 function calcFor(t) {
   if (t === 'simple') calcSimple();
@@ -28,6 +28,7 @@ function calcFor(t) {
   else if (t === 'parallel') calcParallel();
   else if (t === 'miter') calcMiter();
   else if (t === 'saddle') calcSaddle();
+  else if (t === 'header') calcHeader();
   else if (t === 'centers') calcCenters();
   else if (t === 'reducers') calcReducers();
   else if (t === 'data') calcData();
@@ -346,6 +347,98 @@ function calcSaddle() {
   lastSaddleSummary = 'Saddle ' + angle + '° · branch ' + branch + '" on ' + header + '" header · deepest ordinate ' + M.formatFraction(s.depth) + ' · wrap ' + M.formatFraction(s.circumference);
 }
 
+// ---------- header ----------
+let lastHeaderSummary = '';
+let hDistInputs = [];
+// One distance box per span: end -> Tee 1 center, each center-to-center
+// gap, last tee center -> far end. Rebuilt when the tee count changes;
+// typed values carry over by role (first span, last span, gaps by index).
+function buildHeaderDists() {
+  const count = parseInt($('h-count').value, 10) || 1;
+  const wrap = $('h-dists');
+  const prev = hDistInputs.map((i) => i.value);
+  const prevLast = prev.length ? prev[prev.length - 1] : '';
+  wrap.innerHTML = '';
+  hDistInputs = [];
+  const labels = ['End of line to Tee 1 center'];
+  for (let i = 1; i < count; i++) labels.push('Tee ' + i + ' to Tee ' + (i + 1) + ' (center-to-center)');
+  labels.push('Tee ' + count + ' center to end of line');
+  labels.forEach((text, i) => {
+    const lab = document.createElement('label');
+    lab.textContent = text;
+    const inp = document.createElement('input');
+    inp.id = 'h-dist-' + i;
+    inp.inputMode = 'decimal';
+    inp.placeholder = "e.g. 36 or 3' 0";
+    let v = i === 0 ? prev[0] : (i === labels.length - 1 ? prevLast : prev[i]);
+    if (v == null || v === '') v = (i === 0 || i === labels.length - 1) ? '24' : '36';
+    inp.value = v;
+    lab.appendChild(inp);
+    wrap.appendChild(lab);
+    inp.addEventListener('input', calcHeader);
+    inp.addEventListener('change', calcHeader);
+    hDistInputs.push(inp);
+  });
+}
+function drawHeaderSVG(h) {
+  const svg = $('h-svg');
+  const x0 = 26, x1 = 314, pipeY = 118, pipeH = 26;
+  const X = (d) => x0 + (h.total > 0 ? (d / h.total) * (x1 - x0) : 0);
+  let str = '';
+  str += '<rect x="' + x0 + '" y="' + pipeY + '" width="' + (x1 - x0) + '" height="' + pipeH + '" class="svg-pipe" stroke-width="2"/>';
+  str += '<line x1="' + (x0 - 10) + '" y1="' + (pipeY + pipeH / 2) + '" x2="' + (x1 + 10) + '" y2="' + (pipeY + pipeH / 2) + '" class="svg-center"/>';
+  h.marks.forEach((m, i) => {
+    const mx = X(m);
+    str += '<rect x="' + (mx - 8).toFixed(1) + '" y="' + (pipeY - 52) + '" width="16" height="52" class="svg-pipe" stroke-width="2"/>';
+    str += '<line x1="' + mx.toFixed(1) + '" y1="' + (pipeY - 60) + '" x2="' + mx.toFixed(1) + '" y2="' + (pipeY + pipeH / 2) + '" class="svg-center"/>';
+    str += '<circle cx="' + mx.toFixed(1) + '" cy="' + (pipeY + pipeH / 2) + '" r="4" class="svg-dot"/>';
+    str += '<text x="' + (mx - 3).toFixed(1) + '" y="' + (pipeY - 68) + '" class="svg-label">' + (i + 1) + '</text>';
+  });
+  const dimY = pipeY + pipeH + 28;
+  str += '<line x1="' + x0 + '" y1="' + dimY + '" x2="' + x1 + '" y2="' + dimY + '" class="svg-end"/>';
+  str += '<line x1="' + x0 + '" y1="' + (dimY - 6) + '" x2="' + x0 + '" y2="' + (dimY + 6) + '" class="svg-end"/><line x1="' + x1 + '" y1="' + (dimY - 6) + '" x2="' + x1 + '" y2="' + (dimY + 6) + '" class="svg-end"/>';
+  str += '<text x="' + ((x0 + x1) / 2 - 42) + '" y="' + (dimY + 20) + '" class="svg-label">TOTAL ' + M.formatFraction(h.total) + '</text>';
+  str += '<text x="' + x0 + '" y="18" class="svg-label dim">numbers are the tees — marks are in the list above</text>';
+  svg.innerHTML = str;
+}
+function calcHeader() {
+  const size = $('h-size').value;
+  const count = parseInt($('h-count').value, 10) || 0;
+  const gap = parseFloat($('h-gap').value);
+  const warn = $('h-warn');
+  const spans = hDistInputs.map((i) => M.parseMeasurement(i.value));
+  if (!count || spans.length !== count + 1 || spans.some((v) => isNaN(v) || v <= 0)) {
+    warn.hidden = false;
+    warn.textContent = 'Enter every span — end of the line to the first tee center, each center-to-center gap, and the last tee center to the far end.';
+    $('h-total').textContent = '—'; $('h-outs').innerHTML = ''; $('h-cuts').innerHTML = ''; $('h-marks').innerHTML = ''; $('h-svg').innerHTML = '';
+    lastHeaderSummary = '';
+    return;
+  }
+  const h = M.header(size, spans, gap);
+  if (!h) return;
+  const row = (k, v) => '<div><dt>' + k + '</dt><dd>' + v + '</dd></div>';
+  $('h-total').textContent = M.formatFraction(h.total);
+  $('h-outs').innerHTML =
+    row('Tee take-out — run, each end (C)', fmt(h.runTakeout)) +
+    row('Tees', h.teeCount + ' × ' + size + '" (run size)') +
+    row('Root gap (each joint)', M.formatFraction(gap)) +
+    row('Source', 'ASME B16.9 tee — run center-to-end');
+  const pieceName = (p) => {
+    if (p.index === 1) return 'start end';
+    if (p.index === h.pieces.length) return 'far end';
+    return 'Tee ' + (p.index - 1) + ' to Tee ' + p.index;
+  };
+  $('h-cuts').innerHTML = '<div class="prow"><b>Cut list</b><span></span></div>' + h.pieces.map((p) =>
+    '<div class="prow"><b>Piece ' + p.index + '</b><span>' + pieceName(p) + ' · CUT ' + (p.valid ? M.formatFraction(p.cut) : '— too short') + '</span></div>').join('');
+  $('h-marks').innerHTML = '<div class="prow"><b>Tee marks</b><span>from the starting end</span></div>' + h.marks.map((m, i) =>
+    '<div class="prow"><b>Tee ' + (i + 1) + '</b><span>mark center at ' + M.formatFraction(m) + '</span></div>').join('');
+  const badPiece = h.pieces.find((p) => !p.valid);
+  warn.hidden = h.valid;
+  if (!h.valid) warn.textContent = 'Piece ' + badPiece.index + ' (' + pieceName(badPiece) + ') comes out at ' + M.formatFraction(badPiece.cut) + ' — that span is too short for the tee take-outs' + (gap ? ' plus root gaps' : '') + '. Widen the spacing.';
+  drawHeaderSVG(h);
+  lastHeaderSummary = 'Header ' + size + '" · ' + h.teeCount + ' tees · total ' + M.formatFraction(h.total) + ' · cuts ' + h.pieces.map((p) => M.formatFraction(p.cut)).join(', ');
+}
+
 // ---------- fitting centers ----------
 let lastCentersSummary = '';
 const CENTER_NOTES = {
@@ -616,6 +709,10 @@ onChange(['p-set', 'p-angle', 'p-spread', 'p-count', 'p-size', 'p-type', 'p-gap'
 onChange(['m-mode', 'm-turn', 'm-center', 'm-joints', 'm-radius'], calcMiter);
 onChange(['sd-branch', 'sd-header', 'sd-angle'], calcSaddle);
 onChange(['c-type', 'c-size'], calcCenters);
+onChange(['h-size', 'h-gap'], calcHeader);
+const onHeaderCount = () => { buildHeaderDists(); calcHeader(); };
+$('h-count').addEventListener('input', onHeaderCount);
+$('h-count').addEventListener('change', onHeaderCount);
 onChange(['rd-type', 'rd-small'], calcReducers);
 $('rd-large').addEventListener('input', () => { fillSmallSizes(); calcReducers(); });
 $('rd-large').addEventListener('change', () => { fillSmallSizes(); calcReducers(); });
@@ -737,6 +834,7 @@ $('p-save').addEventListener('click', () => saveCalc(lastParallel));
 $('m-save').addEventListener('click', () => saveText(lastMiterSummary));
 $('sd-save').addEventListener('click', () => saveText(lastSaddleSummary));
 $('c-save').addEventListener('click', () => saveText(lastCentersSummary));
+$('h-save').addEventListener('click', () => saveText(lastHeaderSummary));
 $('rd-save').addEventListener('click', () => saveText(lastReducersSummary));
 
 // ---------- PWA: offline shell for field dead zones ----------
@@ -746,7 +844,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-fillSmallSizes(); calcSimple(); calcRolling(); calcParallel(); calcMiter(); calcSaddle(); calcCenters(); calcReducers(); calcData(); buildReference(); calcReference(); renderSaved();
+fillSmallSizes(); buildHeaderDists(); calcSimple(); calcRolling(); calcParallel(); calcMiter(); calcSaddle(); calcHeader(); calcCenters(); calcReducers(); calcData(); buildReference(); calcReference(); renderSaved();
 
 // Brand splash: the wordmark is drawn on by an electric arc (per-path stroke
 // draw with staggered timing), the fill floods in, then PIPE LAYOUT strikes

@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="style.css?v=15">
+<link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
 <div id="splash" aria-hidden="true">
@@ -52,7 +52,7 @@
     <h1>Pipe Layout</h1>
   </div>
   <p class="sub">Offsets, miters, saddles &amp; cut lengths for the field. Verify every number before you cut.</p>
-  <p class="build">BUILD v1.9</p>
+  <p class="build">BUILD v2.0</p>
 </header>
 
 <main class="home-main">
@@ -81,6 +81,11 @@
       <span class="tile-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 16 H22"/><path d="M2 21 H22"/><path d="M10 16 V4"/><path d="M14 16 V4"/><path d="M10 16 Q12 13 14 16"/></svg></span>
       <span class="tile-name">Saddle</span>
       <span class="tile-desc">Wrap-around template ordinates for a branch</span>
+    </button>
+    <button class="tile" data-open="header">
+      <span class="tile-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 17 H22"/><path d="M6 17 V6"/><path d="M12 17 V6"/><path d="M18 17 V6"/></svg></span>
+      <span class="tile-name">Header</span>
+      <span class="tile-desc">Build a header — up to 6 tees, marks &amp; cut list</span>
     </button>
     <button class="tile" data-open="centers">
       <span class="tile-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20 V10 A6 6 0 0 1 10 4 H20"/><path d="M4 13 H13 V4" stroke-dasharray="3 2.4"/><circle cx="13" cy="13" r="1.6" fill="currentColor" stroke="none"/></svg></span>
@@ -111,7 +116,7 @@
     <div class="topbar-in">
       <button id="btn-home" class="home-btn">← Home</button>
       <span id="tool-title" class="tool-title"></span>
-      <span class="build build-sm">BUILD v1.9</span>
+      <span class="build build-sm">BUILD v2.0</span>
     </div>
   </div>
 
@@ -405,6 +410,50 @@
 </section>
 
 
+<!-- HEADER -->
+<section id="panel-header" class="panel">
+  <div class="grid">
+    <div class="card inputs">
+      <label>Pipe size (NPS) — header &amp; tee runs
+        <select id="h-size"></select>
+      </label>
+      <label>Number of tees
+        <select id="h-count">
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3" selected>3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+        </select>
+      </label>
+      <div id="h-dists"></div>
+      <label>Root gap (each joint)
+        <select id="h-gap">
+          <option value="0">0</option>
+          <option value="0.0625" selected>1/16"</option>
+          <option value="0.09375">3/32"</option>
+          <option value="0.125">1/8"</option>
+          <option value="0.1875">3/16"</option>
+        </select>
+      </label>
+      <p class="note">Measure every span to the tee CENTERS — end of the line to the first tee center, then center-to-center between tees. The cut list takes out the tee take-outs and root gaps for you. Branch size doesn't change the run cuts: a reducing tee's run take-out is the same as an equal tee's at the header size (ASME B16.9).</p>
+    </div>
+    <div class="card results">
+      <div class="hero"><span class="hero-label">TOTAL LENGTH — END TO END</span><span id="h-total" class="hero-value">—</span></div>
+      <dl class="outs" id="h-outs"></dl>
+      <div id="h-cuts" class="pipe-list"></div>
+      <div id="h-marks" class="pipe-list"></div>
+      <p id="h-warn" class="warn" hidden></p>
+      <div class="svgstage">
+        <svg id="h-svg" viewBox="0 0 340 210" role="img" aria-label="Header layout diagram"></svg>
+        <div class="stage-hint">Schematic — tee spacing to scale, pipe size is not</div>
+      </div>
+      <button id="h-save" class="save">Save this calculation</button>
+    </div>
+  </div>
+</section>
+
 <!-- FITTING CENTERS -->
 <section id="panel-centers" class="panel">
   <div class="grid">
@@ -584,9 +633,9 @@
   <p class="brand-credit"><img src="brand-wordmark.svg" alt="Faust Skunkwerks" class="brand-credit-logo"></p>
 </footer>
 
-<script src="core/tables.js?v=15"></script>
-<script src="core/pipeMath.js?v=15"></script>
-<script src="pipe3d.js?v=15"></script>
-<script src="app.js?v=15"></script>
+<script src="core/tables.js?v=16"></script>
+<script src="core/pipeMath.js?v=16"></script>
+<script src="pipe3d.js?v=16"></script>
+<script src="app.js?v=16"></script>
 </body>
 </html>

@@ -10,6 +10,7 @@ Live site: https://pipe.f4u5t.com
 - Equal-spread offsets with gain/stagger per pipe
 - Single miter cuts (long/short side from square)
 - Wrap-around saddle templates (16 ordinates, unrolled flat)
+- Header builder — up to 6 tees on a run, tee center marks & full cut list
 - Converters (fraction / decimal / mm), slope & pitch
 - Reference tables: ASME B36.10M pipe data, ASME B16.9 elbow take-outs, ASME B16.5 Class 150 flange bolt-up
 
