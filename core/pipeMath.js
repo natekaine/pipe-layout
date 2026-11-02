@@ -281,6 +281,62 @@
     };
   }
 
+  // Header: a straight run with equal tees in it, laid out from measured
+  // spans. spans[0] is the starting end of the line to Tee 1's center,
+  // spans[i] is Tee i's center to Tee i+1's center (center-to-center, the
+  // way it's taped in the field), and the last span is the last tee's
+  // center to the far end of the line. Each end of the line is either
+  // OPEN (a plain pipe end — the span measures to the end of the pipe)
+  // or closed with a 90 (the span measures to the elbow's CENTER, the
+  // same center the Fitting Centers tool finds). endTakeouts is
+  // [start, far], each the elbow's center-to-end at that end, or 0/null
+  // for an open end. The pipe pieces between fittings are what gets cut:
+  //   end piece, open end  cut = span - C - gap
+  //   end piece, 90 on it  cut = span - elbow take-out - C - 2 x gap
+  //   middle piece         cut = span - 2C - 2 x gap
+  // where C is the tee run center-to-end (ASME B16.9) at the header size
+  // and gap is the root gap at each butt joint — the same convention
+  // cutLength() uses on a travel piece. A reducing tee's run center-to-
+  // end is the same as an equal tee's at the run size, so the branch
+  // size never changes these cuts. Marks are the tee centers measured
+  // from the starting reference (pipe end, or elbow center with a 90) —
+  // where to scribe each tee when laying the header out.
+  function header(nps, spans, gapPerJoint, endTakeouts) {
+    const t = Tables.tee(nps);
+    if (!t || !spans || spans.length < 2) return null;
+    const C = t.c;
+    const gap = gapPerJoint || 0;
+    const ends = endTakeouts || [];
+    const startTO = ends[0] || 0;
+    const farTO = ends[1] || 0;
+    const teeCount = spans.length - 1;
+    const marks = [];
+    let acc = 0;
+    for (let i = 0; i < teeCount; i++) { acc += spans[i]; marks.push(acc); }
+    const total = spans.reduce((a, b) => a + b, 0);
+    const pieces = spans.map((span, i) => {
+      const isFirst = i === 0;
+      const isLast = i === spans.length - 1;
+      let cut, kind;
+      if (isFirst) {
+        cut = span - startTO - C - gap * (startTO ? 2 : 1);
+        kind = 'end';
+      } else if (isLast) {
+        cut = span - farTO - C - gap * (farTO ? 2 : 1);
+        kind = 'end';
+      } else {
+        cut = span - 2 * C - 2 * gap;
+        kind = 'middle';
+      }
+      return { index: i + 1, kind, span, cut, valid: cut > 0 };
+    });
+    return {
+      nps, teeCount, runTakeout: C, gap, total, marks, pieces,
+      startTakeout: startTO, farTakeout: farTO,
+      valid: pieces.every((p) => p.valid),
+    };
+  }
+
   function pipeData(nps, schedule) {
     const p = Tables.byNps(nps);
     if (!p) return null;
@@ -327,7 +383,7 @@
     return { inPerFt: 12 * tan, degrees: deg(Math.atan(tan)), percent: 100 * tan };
   }
 
-  const api = { parseMeasurement, formatFraction, formatDecimal, simpleOffset, rollingOffset, parallelOffset, takeout, cutLength, teeCenter, reducer, pipeData, singleMiter, segmentedMiter, saddle, MM_PER_INCH, inchesToMm, mmToInches, fractionChart, circumference, slope };
+  const api = { parseMeasurement, formatFraction, formatDecimal, simpleOffset, rollingOffset, parallelOffset, takeout, cutLength, teeCenter, reducer, header, pipeData, singleMiter, segmentedMiter, saddle, MM_PER_INCH, inchesToMm, mmToInches, fractionChart, circumference, slope };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.PipeMath = api;
 })(typeof window !== 'undefined' ? window : globalThis);
