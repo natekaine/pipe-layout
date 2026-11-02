@@ -7,10 +7,13 @@
 
   // ---- input parsing -------------------------------------------------------
   // Accepts: 6.375 | 6-3/8 | 6 3/8 | 3/8 | 4' 6-1/2" | 12'6-3/8 | 12'
+  // | unicode vulgar fractions (20¼, 1½, ¾)
+  const VULGAR = { '¼': '1/4', '½': '1/2', '¾': '3/4', '⅛': '1/8', '⅜': '3/8', '⅝': '5/8', '⅞': '7/8', '⅓': '1/3', '⅔': '2/3', '⅙': '1/6', '⅚': '5/6' };
   function parseMeasurement(input) {
     if (typeof input === 'number') return input;
     if (!input) return NaN;
     let s = String(input).trim().replace(/["\u2033]/g, '').trim();
+    s = s.replace(/[¼½¾⅛⅜⅝⅞⅓⅔⅙⅚]/g, (ch) => ' ' + VULGAR[ch] + ' ').trim();
     if (!s) return NaN;
     let feet = 0;
     const apos = s.indexOf("'");
