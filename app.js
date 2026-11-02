@@ -3,6 +3,40 @@ const M = window.PipeMath, T = window.PipeTables;
 const $ = (id) => document.getElementById(id);
 const fmt = (v) => M.formatFraction(v) + '  <small>(' + M.formatDecimal(v) + ')</small>';
 
+// ---------- fraction entry echo ----------
+// Every measurement box takes fractions (20 1/4, 20-1/4, 1' 2-3/8, 20¼).
+// The line under the box reads back what the app took the entry as —
+// inches as a tape fraction and as a decimal — so 20.25 and 20 1/4 are
+// visibly the same number before you trust the cut that comes from it.
+function fracInches(v) {
+  if (v == null || isNaN(v)) return '—';
+  const neg = v < 0;
+  const t = Math.round(Math.abs(v) * 16);
+  const whole = Math.floor(t / 16);
+  const n = t % 16;
+  if (!n) return (neg ? '-' : '') + whole + '"';
+  let a = n, b = 16;
+  while (b) { const r = a % b; a = b; b = r; }
+  return (neg ? '-' : '') + (whole ? whole + '-' : '') + (n / a) + '/' + (16 / a) + '"';
+}
+function updateEcho(input, echoEl) {
+  if (!input || !echoEl) return;
+  const raw = (input.value || '').trim();
+  if (!raw) { echoEl.innerHTML = ''; return; }
+  const v = M.parseMeasurement(raw);
+  echoEl.innerHTML = isNaN(v)
+    ? 'can\'t read that — try 20 1/4 or 20.25'
+    : '= <b>' + fracInches(v) + '</b> · ' + M.formatDecimal(v);
+}
+function bindEcho(id) {
+  const input = $(id), echoEl = $(id + '-echo');
+  if (!input || !echoEl) return;
+  const upd = () => updateEcho(input, echoEl);
+  input.addEventListener('input', upd);
+  input.addEventListener('change', upd);
+  upd();
+}
+
 // fill size selects
 function fillSizes(id, dflt) {
   const sel = $(id);
@@ -374,9 +408,16 @@ function buildHeaderDists() {
     if (v == null || v === '') v = (i === 0 || i === labels.length - 1) ? '24' : '36';
     inp.value = v;
     lab.appendChild(inp);
+    const echo = document.createElement('small');
+    echo.className = 'frac-echo';
+    lab.appendChild(echo);
     wrap.appendChild(lab);
     inp.addEventListener('input', calcHeader);
     inp.addEventListener('change', calcHeader);
+    const upd = () => updateEcho(inp, echo);
+    inp.addEventListener('input', upd);
+    inp.addEventListener('change', upd);
+    upd();
     hDistInputs.push(inp);
   });
 }
@@ -876,6 +917,7 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+['s-set', 'r-rise', 'r-roll', 'r-advance', 'p-set', 'p-spread', 'm-center', 'm-radius'].forEach(bindEcho);
 fillSmallSizes(); buildHeaderDists(); calcSimple(); calcRolling(); calcParallel(); calcMiter(); calcSaddle(); calcHeader(); calcCenters(); calcReducers(); calcData(); buildReference(); calcReference(); renderSaved();
 
 // Brand splash: the wordmark is drawn on by an electric arc (per-path stroke

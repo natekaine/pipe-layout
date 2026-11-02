@@ -8,7 +8,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
-<link rel="stylesheet" href="style.css?v=16">
+<link rel="stylesheet" href="style.css?v=17">
 </head>
 <body>
 <div id="splash" aria-hidden="true">
@@ -52,7 +52,7 @@
     <h1>Pipe Layout</h1>
   </div>
   <p class="sub">Offsets, miters, saddles &amp; cut lengths for the field. Verify every number before you cut.</p>
-  <p class="build">BUILD v2.0</p>
+  <p class="build">BUILD v2.1</p>
 </header>
 
 <main class="home-main">
@@ -116,7 +116,7 @@
     <div class="topbar-in">
       <button id="btn-home" class="home-btn">← Home</button>
       <span id="tool-title" class="tool-title"></span>
-      <span class="build build-sm">BUILD v2.0</span>
+      <span class="build build-sm">BUILD v2.1</span>
     </div>
   </div>
 
@@ -126,6 +126,7 @@
     <div class="card inputs">
       <label>Set (offset distance, center-to-center)
         <input id="s-set" inputmode="decimal" placeholder='e.g. 12 or 1&apos; 2-3/8' value="12">
+        <small class="frac-echo" id="s-set-echo"></small>
       </label>
       <label>Fitting angle
         <select id="s-angle">
@@ -180,10 +181,12 @@
   <div class="grid">
     <div class="card inputs">
       <label>Rise (vertical, center-to-center)
-        <input id="r-rise" inputmode="decimal" placeholder="e.g. 16" value="16">
+        <input id="r-rise" inputmode="decimal" placeholder="e.g. 16 or 16-1/2" value="16">
+        <small class="frac-echo" id="r-rise-echo"></small>
       </label>
       <label>Roll (sideways, center-to-center)
-        <input id="r-roll" inputmode="decimal" placeholder="e.g. 12" value="12">
+        <input id="r-roll" inputmode="decimal" placeholder="e.g. 12 or 12-3/4" value="12">
+        <small class="frac-echo" id="r-roll-echo"></small>
       </label>
       <label>Solve by
         <select id="r-mode">
@@ -202,7 +205,8 @@
         </select>
       </label>
       <label id="r-advance-wrap" hidden>Advance — forward distance along the run
-        <input id="r-advance" inputmode="decimal" placeholder="e.g. 20">
+        <input id="r-advance" inputmode="decimal" placeholder="e.g. 20 or 20 1/4">
+        <small class="frac-echo" id="r-advance-echo"></small>
       </label>
       <p class="note">"Advance" is just how far forward the pipe moves (along its original direction) while it rolls up and sideways. Solve by angle if you know your fittings; solve by advance if you know where the pipe has to end up.</p>
       <label>Pipe size (NPS, butt-weld elbows)
@@ -250,7 +254,8 @@
   <div class="grid">
     <div class="card inputs">
       <label>Set (offset distance, center-to-center)
-        <input id="p-set" inputmode="decimal" placeholder="e.g. 12" value="12">
+        <input id="p-set" inputmode="decimal" placeholder="e.g. 12 or 12-1/2" value="12">
+        <small class="frac-echo" id="p-set-echo"></small>
       </label>
       <label>Fitting angle
         <select id="p-angle">
@@ -272,7 +277,8 @@
         </select>
       </label>
       <label>Spread (center-to-center between pipes)
-        <input id="p-spread" inputmode="decimal" placeholder="e.g. 6" value="6">
+        <input id="p-spread" inputmode="decimal" placeholder="e.g. 6 or 6-3/8" value="6">
+        <small class="frac-echo" id="p-spread-echo"></small>
       </label>
       <label>Number of pipes
         <select id="p-count">
@@ -337,7 +343,8 @@
         <select id="m-size"></select>
       </label>
       <label id="m-center-wrap">Piece length at centerline (to center of the miter face)
-        <input id="m-center" inputmode="decimal" placeholder="e.g. 12" value="12">
+        <input id="m-center" inputmode="decimal" placeholder="e.g. 12 or 12-1/4" value="12">
+        <small class="frac-echo" id="m-center-echo"></small>
       </label>
       <label id="m-joints-wrap" hidden>Miter cuts (joints)
         <select id="m-joints">
@@ -350,7 +357,8 @@
         </select>
       </label>
       <label id="m-radius-wrap" hidden>Centerline radius of the bend
-        <input id="m-radius" inputmode="decimal" placeholder="e.g. 9" value="9">
+        <input id="m-radius" inputmode="decimal" placeholder="e.g. 9 or 9-1/2" value="9">
+        <small class="frac-echo" id="m-radius-echo"></small>
       </label>
       <p class="note" id="m-note-single">A single miter turns the pipe with one joint: each piece is cut at <strong>half the turn angle</strong>, measured from square. Long and short sides are measured from the square end of the piece to the long / short point of the cut.</p>
       <p class="note" id="m-note-seg" hidden>Each cut turns an equal share of the bend, so every piece is cut at the same angle. <strong>End tangents</strong> run from the bend's tangent point to the first joint; <strong>middle tangents</strong> run joint-to-joint, all measured on the centerline. For reference, a long-radius centerline is 1.5 × the pipe size.</p>
@@ -647,9 +655,9 @@
   <p class="brand-credit"><img src="brand-wordmark.svg" alt="Faust Skunkwerks" class="brand-credit-logo"></p>
 </footer>
 
-<script src="core/tables.js?v=16"></script>
-<script src="core/pipeMath.js?v=16"></script>
-<script src="pipe3d.js?v=16"></script>
-<script src="app.js?v=16"></script>
+<script src="core/tables.js?v=17"></script>
+<script src="core/pipeMath.js?v=17"></script>
+<script src="pipe3d.js?v=17"></script>
+<script src="app.js?v=17"></script>
 </body>
 </html>
